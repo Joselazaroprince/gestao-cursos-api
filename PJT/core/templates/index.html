@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gestão de Cursos - SPA</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    .hidden { display: none; }
+    .pointer { cursor: pointer; }
+  </style>
+</head>
+<body class="container py-4">
+
+  <h1 class="mb-4">Gestão de Cursos - SPA</h1>
+
+  <nav class="mb-4">
+    <button class="btn btn-outline-primary me-2" onclick="showSection('cursos')">Cursos</button>
+    <button class="btn btn-outline-primary me-2" onclick="showSection('modulos')">Módulos</button>
+    <button class="btn btn-outline-primary" onclick="showSection('inscricoes')">Inscrições</button>
+  </nav>
+
+  <!-- Seções de dados -->
+  <section id="cursos" class="data-section">
+    <h2>Cursos</h2>
+    <ul id="cursos-list" class="list-group"></ul>
+  </section>
+
+  <section id="modulos" class="data-section hidden">
+    <h2>Módulos</h2>
+    <ul id="modulos-list" class="list-group"></ul>
+  </section>
+
+  <section id="inscricoes" class="data-section hidden">
+    <h2>Inscrições</h2>
+    <ul id="inscricoes-list" class="list-group"></ul>
+  </section>
+
+  <hr />
+
+  <!-- Formulários para criar -->
+  <div id="form-cursos" class="mb-4">
+    <h3>Criar Novo Curso</h3>
+    <form id="curso-form">
+      <input type="text" id="nome-curso" placeholder="Nome" required class="form-control mb-2" />
+      <textarea id="descricao-curso" placeholder="Descrição" required class="form-control mb-2"></textarea>
+      <button type="submit" class="btn btn-primary">Criar Curso</button>
+    </form>
+  </div>
+
+  <div id="form-modulos" class="mb-4 hidden">
+    <h3>Criar Novo Módulo</h3>
+    <form id="modulo-form">
+      <input type="text" id="nome-modulo" placeholder="Nome" required class="form-control mb-2" />
+      <input type="number" id="curso-modulo" placeholder="ID do Curso" required class="form-control mb-2" />
+      <button type="submit" class="btn btn-primary">Criar Módulo</button>
+    </form>
+  </div>
+
+  <div id="form-inscricoes" class="mb-4 hidden">
+    <h3>Criar Nova Inscrição</h3>
+    <form id="inscricao-form">
+      <input type="text" id="estudante-inscricao" placeholder="Nome do Estudante" required class="form-control mb-2" />
+      <input type="number" id="curso-inscricao" placeholder="ID do Curso" required class="form-control mb-2" />
+      <button type="submit" class="btn btn-primary">Criar Inscrição</button>
+    </form>
+  </div>
+
+  <script>
+    const apiBase = '/api';
+
+    // Mostra seção e formulário correto
+    function showSection(id) {
+      document.querySelectorAll('.data-section').forEach(sec => {
+        sec.classList.toggle('hidden', sec.id !== id);
+      });
+      document.querySelectorAll('[id^="form-"]').forEach(formDiv => {
+        formDiv.classList.toggle('hidden', formDiv.id !== 'form-' + id);
+      });
+      loadSection(id);
+    }
+
+    // Carrega dados e mostra nas listas
+    async function loadSection(id) {
+      const res = await fetch(`${apiBase}/${id}/`);
+      const data = await res.json();
+
+      let ul = document.getElementById(`${id}-list`);
+      ul.innerHTML = '';
+
+      data.results.forEach(item => {
+        let li = document.createElement('li');
+        li.className = 'list-group-item';
+
+        if (id === 'cursos') {
+          li.textContent = `ID: ${item.id} — ${item.nome} — ${item.descricao}`;
+        } else if (id === 'modulos') {
+          li.textContent = `ID: ${item.id} — ${item.nome} — Curso: ${item.curso}`;
+        } else if (id === 'inscricoes') {
+          li.textContent = `ID: ${item.id} — Estudante: ${item.estudante} — Curso: ${item.curso}`;
+        }
+
+        ul.appendChild(li);
+      });
+    }
+
+    // Faz POST para criar novo registro
+    async function postData(endpoint, data) {
+      const response = await fetch(`${apiBase}/${endpoint}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        alert('Erro ao criar. Verifique os dados e tente novamente.');
+        throw new Error('Erro na requisição POST');
+      }
+
+      return response.json();
+    }
+
+    // Eventos para criação via formulário
+    document.getElementById('curso-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const data = {
+        nome: document.getElementById('nome-curso').value,
+        descricao: document.getElementById('descricao-curso').value,
+      };
+      await postData('cursos', data);
+      e.target.reset();
+      loadSection('cursos');
+    });
+
+    document.getElementById('modulo-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const data = {
+        nome: document.getElementById('nome-modulo').value,
+        curso: parseInt(document.getElementById('curso-modulo').value),
+      };
+      await postData('modulos', data);
+      e.target.reset();
+      loadSection('modulos');
+    });
+
+    document.getElementById('inscricao-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const data = {
+        estudante: document.getElementById('estudante-inscricao').value,
+        curso: parseInt(document.getElementById('curso-inscricao').value),
+      };
+      await postData('inscricoes', data);
+      e.target.reset();
+      loadSection('inscricoes');
+    });
+
+    // Inicializa mostrando cursos
+    showSection('cursos');
+  </script>
+</body>
+</html>
