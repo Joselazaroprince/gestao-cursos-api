@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: gestao-cursos-api
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn gestao_cursos.wsgi:application"
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: gestao_cursos.settings
+      - key: SECRET_KEY
+        value: sua_chave_secreta
+      - key: RENDER
+        value: True
