@@ -1,2 +1,1 @@
-web: gunicorn gestao_cursos.wsgi
-web: gunicorn PJT.wsgi --log-file -
+web: gunicorn pjt.wsgi:application --log-file -

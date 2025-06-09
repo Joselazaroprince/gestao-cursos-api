@@ -1,7 +1,0 @@
-Django>=4.0
-mysqlclient
-djangorestframework
-gunicorn
-python-dotenv
-whitenoise
-django-cors-headers

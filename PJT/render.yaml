@@ -3,11 +3,13 @@ services:
     name: gestao-cursos-api
     env: python
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn gestao_cursos.wsgi:application"
+    startCommand: "gunicorn pjt.wsgi:application"
     envVars:
       - key: DJANGO_SETTINGS_MODULE
-        value: gestao_cursos.settings
+        value: pjt.settings
       - key: SECRET_KEY
         value: sua_chave_secreta
       - key: RENDER
         value: True
+      - key: DATABASE_URL
+        value: postgres://usuario_db:1234!@db-postgres-abcdef.render.com:5432/gestao_cursos
