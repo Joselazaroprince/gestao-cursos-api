@@ -61,7 +61,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'joselazaroprince$gestao_cursos',
         'USER': 'joselazaroprince',
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'sua_senha_secreta'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', '1234'),
         'HOST': 'joselazaroprince.mysql.pythonanywhere-services.com',
         'PORT': '3306',
         'OPTIONS': {
