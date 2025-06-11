@@ -78,7 +78,7 @@ USE_TZ = True
 
 # ARQUIVOS ESTÁTICOS
 STATIC_URL = '/static/'
-STATIC_ROOT = '/home/joselazaroprince/gestao-cursos-api/static'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = []  # Apenas se usar diretórios adicionais
 
 # ARQUIVOS DE MÍDIA (caso use uploads)
