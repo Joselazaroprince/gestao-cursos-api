@@ -1,10 +1,12 @@
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-secret-key'
 DEBUG = True
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['joselazaroprince.pythonanywhere.com']
+
 
 # SOLUÇÃO: Adicionei esta configuração para resolver os warnings
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -63,7 +65,8 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 STATIC_URL = 'static/'
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'static') 
+STATICFILES_DIRS = [] 
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
