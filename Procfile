@@ -1,2 +1,1 @@
-web: gunicorn gestao_cursos.wsgi
-web: gunicorn PJT.wsgi --log-file -
+web: gunicorn gestao_cursos.wsgi --bind 0.0.0.0:$PORT
