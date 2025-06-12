@@ -1,618 +1,220 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt">
 <head>
-  <meta charset="UTF-8">
-  <title>Gestão de Cursos - SPA</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-  <style>
-    :root {
-      --primary-color: #4e73df;
-      --secondary-color: #f8f9fc;
-      --accent-color: #2e59d9;
-    }
-    
-    body {
-      padding-top: 60px;
-      background-color: var(--secondary-color);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    
-    .navbar {
-      box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
-    }
-    
-    .card {
-      border-radius: 0.35rem;
-      box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      border: none;
-      height: 100%;
-    }
-    
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 0.5rem 1.5rem 0 rgba(58, 59, 69, 0.2);
-    }
-    
-    .btn-primary {
-      background-color: var(--primary-color);
-      border-color: var(--primary-color);
-    }
-    
-    .btn-primary:hover {
-      background-color: var(--accent-color);
-      border-color: var(--accent-color);
-    }
-    
-    .login-container {
-      max-width: 400px;
-      margin: 0 auto;
-      padding: 2rem;
-      background: white;
-      border-radius: 0.35rem;
-      box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
-    }
-    
-    .loading-spinner {
-      display: none;
-      width: 3rem;
-      height: 3rem;
-    }
-    
-    .curso-card-footer {
-      border-top: 1px solid rgba(0,0,0,0.1);
-      padding-top: 0.75rem;
-      margin-top: auto;
-    }
-    
-    .toast-container {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 1100;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestão de Cursos</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
 </head>
 <body>
+  <div class="container py-4">
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
-  <div class="container-fluid">
-    <a class="navbar-brand fw-bold" href="#">
-      <i class="bi bi-book me-2"></i>Gestão de Cursos
-    </a>
-    <div class="d-flex">
-      <button class="btn btn-light ms-auto" id="logout-btn" style="display: none;">
-        <i class="bi bi-box-arrow-right me-1"></i>Sair
-      </button>
-      <button class="btn btn-outline-light ms-2" id="login-btn">
-        <i class="bi bi-box-arrow-in-right me-1"></i>Entrar
-      </button>
-    </div>
-  </div>
-</nav>
-
-<div class="toast-container"></div>
-
-<div class="container mt-4">
-  <div id="login-section">
-    <div class="login-container">
-      <h2 class="text-center mb-4">
-        <i class="bi bi-person-circle me-2"></i>Acesso ao Sistema
-      </h2>
-      <div class="mb-3">
-        <label for="username" class="form-label">Usuário</label>
-        <input type="text" id="username" class="form-control" placeholder="Digite seu usuário">
-      </div>
-      <div class="mb-4">
-        <label for="password" class="form-label">Senha</label>
-        <input type="password" id="password" class="form-control" placeholder="Digite sua senha">
-      </div>
-      <button class="btn btn-primary w-100 mb-3" onclick="login()">
-        <span id="login-text">Entrar</span>
-        <div id="login-spinner" class="spinner-border spinner-border-sm text-light loading-spinner" role="status">
-          <span class="visually-hidden">Carregando...</span>
-        </div>
-      </button>
-      <div class="text-center">
-        <a href="#" class="text-decoration-none" onclick="showToast('Funcionalidade em desenvolvimento')">Esqueci minha senha</a>
-      </div>
-    </div>
-  </div>
-
-  <div id="spa-content" style="display: none;">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h1 class="h3 mb-0 text-gray-800">
-        <i class="bi bi-bookmarks me-2"></i>Meus Cursos
-      </h1>
-      <button class="btn btn-primary" id="add-curso-btn">
-        <i class="bi bi-plus-circle me-1"></i>Adicionar Curso
-      </button>
-    </div>
-    
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="curso-list"></div>
-    
-    <div class="d-flex justify-content-center mt-4">
-      <div class="spinner-border text-primary loading-spinner" id="curso-loading" role="status">
-        <span class="visually-hidden">Carregando...</span>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal para adicionar/editar curso -->
-<div class="modal fade" id="cursoModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="modalTitle">Adicionar Novo Curso</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form id="cursoForm">
-          <input type="hidden" id="cursoId">
+    <!-- Login Section -->
+    <div id="login-section" class="card mx-auto" style="max-width: 400px;">
+      <div class="card-body">
+        <h3 class="card-title text-center">Login</h3>
+        <div id="login-error" class="alert alert-danger d-none"></div>
+        <form id="login-form">
           <div class="mb-3">
-            <label for="cursoNome" class="form-label">Nome do Curso</label>
-            <input type="text" class="form-control" id="cursoNome" required>
+            <label for="username" class="form-label">Usuário</label>
+            <input type="text" id="username" class="form-control" required/>
           </div>
           <div class="mb-3">
-            <label for="cursoDescricao" class="form-label">Descrição</label>
-            <textarea class="form-control" id="cursoDescricao" rows="3" required></textarea>
+            <label for="password" class="form-label">Senha</label>
+            <input type="password" id="password" class="form-control" required/>
           </div>
-          <div class="mb-3">
-            <label for="cursoCargaHoraria" class="form-label">Carga Horária (horas)</label>
-            <input type="number" class="form-control" id="cursoCargaHoraria" min="1" required>
-          </div>
+          <button type="submit" class="btn btn-primary w-100">Entrar</button>
         </form>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" id="saveCursoBtn">
-          <span id="save-text">Salvar</span>
-          <div id="save-spinner" class="spinner-border spinner-border-sm text-light loading-spinner" role="status">
-            <span class="visually-hidden">Carregando...</span>
-          </div>
-        </button>
-      </div>
     </div>
-  </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  // Variáveis globais
-  let cursoModal = null;
-  
-  // Inicialização quando o DOM estiver carregado
-  document.addEventListener('DOMContentLoaded', function() {
-    // Verificar se o usuário já está autenticado
-    checkAuthStatus();
-    
-    // Inicializar o modal
-    cursoModal = new bootstrap.Modal(document.getElementById('cursoModal'));
-    
-    // Configurar eventos
-    document.getElementById('logout-btn').addEventListener('click', logout);
-    document.getElementById('login-btn').addEventListener('click', showLogin);
-    document.getElementById('add-curso-btn').addEventListener('click', showAddCursoModal);
-    document.getElementById('saveCursoBtn').addEventListener('click', saveCurso);
-    
-    // Verificar token periodicamente (a cada 5 minutos)
-    setInterval(checkTokenValidity, 300000);
-  });
-  
-  // Mostrar toast de notificação
-  function showToast(message, type = 'info') {
-    const toastContainer = document.querySelector('.toast-container');
-    const toastId = 'toast-' + Date.now();
-    
-    const toast = document.createElement('div');
-    toast.className = `toast align-items-center text-white bg-${type} border-0 show`;
-    toast.role = 'alert';
-    toast.setAttribute('aria-live', 'assertive');
-    toast.setAttribute('aria-atomic', 'true');
-    toast.id = toastId;
-    
-    toast.innerHTML = `
-      <div class="d-flex">
-        <div class="toast-body">
-          ${message}
-        </div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    <!-- Painel Principal -->
+    <div id="main-section" class="d-none">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Gestão de Cursos</h2>
+        <button id="logout-button" class="btn btn-danger">Sair</button>
       </div>
-    `;
-    
-    toastContainer.appendChild(toast);
-    
-    // Remover o toast após 5 segundos
-    setTimeout(() => {
-      const toastElement = document.getElementById(toastId);
-      if (toastElement) {
-        toastElement.remove();
-      }
-    }, 5000);
-  }
-  
-  // Verificar status de autenticação
-  async function checkAuthStatus() {
-    const token = localStorage.getItem("access");
-    if (token) {
-      try {
-        document.getElementById('curso-loading').style.display = 'block';
-        await loadCursos();
-        document.getElementById('login-section').style.display = 'none';
-        document.getElementById('spa-content').style.display = 'block';
-        document.getElementById('logout-btn').style.display = 'inline-block';
-        document.getElementById('login-btn').style.display = 'none';
-      } catch (error) {
-        console.error('Erro ao verificar autenticação:', error);
-        logout();
-      } finally {
-        document.getElementById('curso-loading').style.display = 'none';
-      }
-    }
-  }
-  
-  // Verificar validade do token
-  async function checkTokenValidity() {
-    const token = localStorage.getItem("access");
-    if (!token) return;
-    
-    try {
-      const response = await fetch("/api/token/verify/", {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({ token })
-      });
-      
-      if (!response.ok) {
-        await refreshToken();
-      }
-    } catch (error) {
-      console.error('Erro ao verificar token:', error);
-    }
-  }
-  
-  // Atualizar token
-  async function refreshToken() {
-    const refreshToken = localStorage.getItem("refresh");
-    if (!refreshToken) {
-      logout();
-      return;
-    }
-    
-    try {
-      const response = await fetch("/api/token/refresh/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh: refreshToken })
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem("access", data.access);
-        return true;
-      } else {
-        logout();
-        return false;
-      }
-    } catch (error) {
-      console.error('Erro ao atualizar token:', error);
-      logout();
-      return false;
-    }
-  }
-  
-  // Função de login
-  async function login() {
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value;
-    
-    if (!username || !password) {
-      showToast('Por favor, preencha todos os campos', 'warning');
-      return;
-    }
-    
-    // Mostrar spinner e desativar botão
-    document.getElementById('login-text').style.display = 'none';
-    document.getElementById('login-spinner').style.display = 'inline-block';
-    
-    try {
-      const response = await fetch("/api/token/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem("access", data.access);
-        localStorage.setItem("refresh", data.refresh);
-        
-        showToast('Login realizado com sucesso', 'success');
-        await loadCursos();
-        
-        document.getElementById("login-section").style.display = "none";
-        document.getElementById("spa-content").style.display = "block";
-        document.getElementById("logout-btn").style.display = "inline-block";
-        document.getElementById("login-btn").style.display = "none";
-      } else {
-        const errorData = await response.json();
-        showToast(errorData.detail || 'Credenciais inválidas', 'danger');
-      }
-    } catch (error) {
-      console.error('Erro no login:', error);
-      showToast('Erro ao conectar com o servidor', 'danger');
-    } finally {
-      // Restaurar botão
-      document.getElementById('login-text').style.display = 'inline';
-      document.getElementById('login-spinner').style.display = 'none';
-    }
-  }
-  
-  // Função de logout
-  function logout() {
-    localStorage.removeItem("access");
-    localStorage.removeItem("refresh");
-    
-    document.getElementById("login-section").style.display = "block";
-    document.getElementById("spa-content").style.display = "none";
-    document.getElementById("logout-btn").style.display = "none";
-    document.getElementById("login-btn").style.display = "inline-block";
-    
-    // Limpar formulários
-    document.getElementById("username").value = "";
-    document.getElementById("password").value = "";
-    
-    showToast('Você foi desconectado', 'info');
-  }
-  
-  // Mostrar seção de login
-  function showLogin() {
-    document.getElementById("login-section").style.display = "block";
-    document.getElementById("spa-content").style.display = "none";
-  }
-  
-  // Carregar cursos
-  async function loadCursos() {
-    const token = localStorage.getItem("access");
-    if (!token) {
-      logout();
-      return;
-    }
-    
-    document.getElementById('curso-loading').style.display = 'block';
-    document.getElementById('curso-list').innerHTML = '';
-    
-    try {
-      let response = await fetch("/api/cursos/", {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      });
-      
-      // Se token expirado, tentar atualizar
-      if (response.status === 401) {
-        const refreshed = await refreshToken();
-        if (refreshed) {
-          response = await fetch("/api/cursos/", {
-            headers: {
-              "Authorization": `Bearer ${localStorage.getItem("access")}`
-            }
-          });
-        } else {
-          throw new Error('Sessão expirada');
-        }
-      }
-      
-      if (response.ok) {
-        const cursos = await response.json();
-        renderCursos(cursos);
-      } else {
-        throw new Error('Erro ao carregar cursos');
-      }
-    } catch (error) {
-      console.error('Erro ao carregar cursos:', error);
-      showToast(error.message || 'Erro ao carregar cursos. Faça login novamente.', 'danger');
-      logout();
-    } finally {
-      document.getElementById('curso-loading').style.display = 'none';
-    }
-  }
-  
-  // Renderizar cursos
-  function renderCursos(cursos) {
-    const list = document.getElementById("curso-list");
-    list.innerHTML = "";
-    
-    if (cursos.length === 0) {
-      list.innerHTML = `
-        <div class="col-12 text-center py-5">
-          <i class="bi bi-book text-muted" style="font-size: 3rem;"></i>
-          <h5 class="mt-3 text-muted">Nenhum curso encontrado</h5>
-          <button class="btn btn-primary mt-3" id="add-first-curso-btn">
-            <i class="bi bi-plus-circle me-1"></i>Adicionar Primeiro Curso
-          </button>
-        </div>
-      `;
-      document.getElementById('add-first-curso-btn').addEventListener('click', showAddCursoModal);
-      return;
-    }
-    
-    cursos.forEach(curso => {
-      const card = document.createElement('div');
-      card.className = 'col';
-      
-      card.innerHTML = `
-        <div class="card h-100">
-          <div class="card-body d-flex flex-column">
-            <div class="d-flex justify-content-between align-items-start mb-2">
-              <h5 class="card-title mb-0">${curso.nome}</h5>
-              <div class="dropdown">
-                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" 
-                  data-bs-toggle="dropdown" aria-expanded="false">
-                  <i class="bi bi-three-dots-vertical"></i>
-                </button>
-                <ul class="dropdown-menu">
-                  <li><a class="dropdown-item" href="#" onclick="editCurso(${curso.id})">
-                    <i class="bi bi-pencil me-2"></i>Editar
-                  </a></li>
-                  <li><a class="dropdown-item text-danger" href="#" onclick="deleteCurso(${curso.id})">
-                    <i class="bi bi-trash me-2"></i>Excluir
-                  </a></li>
-                </ul>
+
+      <!-- Formulário de Cadastro/Edição -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title" id="form-title">Adicionar Curso</h5>
+          <form id="course-form">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <input type="text" id="nome" class="form-control" placeholder="Nome do Curso" required/>
+              </div>
+              <div class="col-md-4">
+                <input type="text" id="descricao" class="form-control" placeholder="Descrição" required/>
+              </div>
+              <div class="col-md-4">
+                <input type="text" id="instrutor" class="form-control" placeholder="Instrutor" required/>
               </div>
             </div>
-            <p class="card-text text-muted">${curso.descricao || 'Sem descrição'}</p>
-            <div class="curso-card-footer mt-auto">
-              <small class="text-muted">
-                <i class="bi bi-clock me-1"></i>${curso.carga_horaria || 'N/A'} horas
-              </small>
+            <div class="mt-3 d-flex justify-content-between">
+              <button type="submit" class="btn btn-success">Salvar</button>
+              <button type="button" id="cancel-edit" class="btn btn-secondary d-none">Cancelar Edição</button>
             </div>
-          </div>
+            <input type="hidden" id="curso-id"/>
+          </form>
         </div>
-      `;
-      
-      list.appendChild(card);
-    });
-  }
-  
-  // Mostrar modal para adicionar curso
-  function showAddCursoModal() {
-    document.getElementById('modalTitle').textContent = 'Adicionar Novo Curso';
-    document.getElementById('cursoForm').reset();
-    document.getElementById('cursoId').value = '';
-    cursoModal.show();
-  }
-  
-  // Mostrar modal para editar curso
-  async function editCurso(id) {
-    const token = localStorage.getItem("access");
-    if (!token) {
-      logout();
-      return;
-    }
-    
-    try {
-      const response = await fetch(`/api/cursos/${id}/`, {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
+      </div>
+
+      <!-- Lista de Cursos -->
+      <div id="course-list" class="row"></div>
+    </div>
+
+  </div>
+
+  <script>
+    const BASE_URL = "https://joselazaroprince.pythonanywhere.com/api";
+    const tokenKey = "accessToken";
+
+    document.getElementById("login-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      const response = await fetch(`${BASE_URL}/token/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
       });
-      
-      if (response.ok) {
-        const curso = await response.json();
-        
-        document.getElementById('modalTitle').textContent = 'Editar Curso';
-        document.getElementById('cursoId').value = curso.id;
-        document.getElementById('cursoNome').value = curso.nome;
-        document.getElementById('cursoDescricao').value = curso.descricao || '';
-        document.getElementById('cursoCargaHoraria').value = curso.carga_horaria || '';
-        
-        cursoModal.show();
+
+      const data = await response.json();
+      if (response.ok && data.access) {
+        localStorage.setItem(tokenKey, data.access);
+        showMain();
+        fetchCursos();
       } else {
-        throw new Error('Erro ao carregar curso');
+        document.getElementById("login-error").classList.remove("d-none");
+        document.getElementById("login-error").textContent = "Usuário ou senha inválido!";
       }
-    } catch (error) {
-      console.error('Erro ao editar curso:', error);
-      showToast(error.message || 'Erro ao carregar curso', 'danger');
-    }
-  }
-  
-  // Salvar curso (criar ou atualizar)
-  async function saveCurso() {
-    const token = localStorage.getItem("access");
-    if (!token) {
-      logout();
-      return;
-    }
-    
-    const id = document.getElementById('cursoId').value;
-    const nome = document.getElementById('cursoNome').value.trim();
-    const descricao = document.getElementById('cursoDescricao').value.trim();
-    const cargaHoraria = document.getElementById('cursoCargaHoraria').value;
-    
-    if (!nome) {
-      showToast('Por favor, informe o nome do curso', 'warning');
-      return;
-    }
-    
-    // Mostrar spinner e desativar botão
-    document.getElementById('save-text').style.display = 'none';
-    document.getElementById('save-spinner').style.display = 'inline-block';
-    document.getElementById('saveCursoBtn').disabled = true;
-    
-    try {
-      const url = id ? `/api/cursos/${id}/` : '/api/cursos/';
-      const method = id ? 'PUT' : 'POST';
-      
+    });
+
+    document.getElementById("logout-button").addEventListener("click", () => {
+      localStorage.removeItem(tokenKey);
+      showLogin();
+    });
+
+    document.getElementById("course-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const nome = document.getElementById("nome").value;
+      const descricao = document.getElementById("descricao").value;
+      const instrutor = document.getElementById("instrutor").value;
+      const cursoId = document.getElementById("curso-id").value;
+
+      const method = cursoId ? "PUT" : "POST";
+      const url = cursoId
+        ? `${BASE_URL}/cursos/${cursoId}/`
+        : `${BASE_URL}/cursos/`;
+
       const response = await fetch(url, {
-        method: method,
+        method,
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          Authorization: `Bearer ${localStorage.getItem(tokenKey)}`,
         },
-        body: JSON.stringify({
-          nome,
-          descricao: descricao || null,
-          carga_horaria: cargaHoraria || null
-        })
+        body: JSON.stringify({ nome, descricao, instrutor }),
       });
-      
+
       if (response.ok) {
-        cursoModal.hide();
-        showToast(`Curso ${id ? 'atualizado' : 'criado'} com sucesso`, 'success');
-        await loadCursos();
+        document.getElementById("course-form").reset();
+        document.getElementById("curso-id").value = "";
+        document.getElementById("form-title").textContent = "Adicionar Curso";
+        document.getElementById("cancel-edit").classList.add("d-none");
+        fetchCursos();
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || `Erro ao ${id ? 'atualizar' : 'criar'} curso`);
+        alert("Erro ao salvar curso!");
       }
-    } catch (error) {
-      console.error('Erro ao salvar curso:', error);
-      showToast(error.message, 'danger');
-    } finally {
-      // Restaurar botão
-      document.getElementById('save-text').style.display = 'inline';
-      document.getElementById('save-spinner').style.display = 'none';
-      document.getElementById('saveCursoBtn').disabled = false;
-    }
-  }
-  
-  // Excluir curso
-  async function deleteCurso(id) {
-    if (!confirm('Tem certeza que deseja excluir este curso?')) {
-      return;
-    }
-    
-    const token = localStorage.getItem("access");
-    if (!token) {
-      logout();
-      return;
-    }
-    
-    try {
-      const response = await fetch(`/api/cursos/${id}/`, {
-        method: 'DELETE',
+    });
+
+    document.getElementById("cancel-edit").addEventListener("click", () => {
+      document.getElementById("course-form").reset();
+      document.getElementById("curso-id").value = "";
+      document.getElementById("form-title").textContent = "Adicionar Curso";
+      document.getElementById("cancel-edit").classList.add("d-none");
+    });
+
+    async function fetchCursos() {
+      const response = await fetch(`${BASE_URL}/cursos/`, {
         headers: {
-          "Authorization": `Bearer ${token}`
-        }
+          Authorization: `Bearer ${localStorage.getItem(tokenKey)}`,
+        },
       });
-      
-      if (response.ok) {
-        showToast('Curso excluído com sucesso', 'success');
-        await loadCursos();
-      } else {
-        throw new Error('Erro ao excluir curso');
-      }
-    } catch (error) {
-      console.error('Erro ao excluir curso:', error);
-      showToast(error.message, 'danger');
+      const cursos = await response.json();
+      renderCursos(cursos);
     }
-  }
-</script>
+
+    function renderCursos(cursos) {
+      const list = document.getElementById("course-list");
+      list.innerHTML = "";
+
+      cursos.forEach((curso) => {
+        const col = document.createElement("div");
+        col.className = "col-md-4";
+        col.innerHTML = `
+          <div class="card mb-3 shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">${curso.nome}</h5>
+              <p class="card-text">${curso.descricao}</p>
+              <p class="card-text"><small class="text-muted">Instrutor: ${curso.instrutor}</small></p>
+              <div class="d-flex justify-content-between">
+                <button class="btn btn-sm btn-primary" onclick="editCurso(${curso.id}, '${curso.nome}', '${curso.descricao}', '${curso.instrutor}')">Editar</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteCurso(${curso.id})">Excluir</button>
+              </div>
+            </div>
+          </div>`;
+        list.appendChild(col);
+      });
+    }
+
+    function editCurso(id, nome, descricao, instrutor) {
+      document.getElementById("curso-id").value = id;
+      document.getElementById("nome").value = nome;
+      document.getElementById("descricao").value = descricao;
+      document.getElementById("instrutor").value = instrutor;
+      document.getElementById("form-title").textContent = "Editar Curso";
+      document.getElementById("cancel-edit").classList.remove("d-none");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    async function deleteCurso(id) {
+      if (!confirm("Tem certeza que deseja excluir este curso?")) return;
+
+      const response = await fetch(`${BASE_URL}/cursos/${id}/`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem(tokenKey)}`,
+        },
+      });
+
+      if (response.ok) {
+        fetchCursos();
+      } else {
+        alert("Erro ao excluir curso!");
+      }
+    }
+
+    function showLogin() {
+      document.getElementById("main-section").classList.add("d-none");
+      document.getElementById("login-section").classList.remove("d-none");
+    }
+
+    function showMain() {
+      document.getElementById("login-section").classList.add("d-none");
+      document.getElementById("main-section").classList.remove("d-none");
+    }
+
+    window.onload = () => {
+      const token = localStorage.getItem(tokenKey);
+      if (token) {
+        showMain();
+        fetchCursos();
+      } else {
+        showLogin();
+      }
+    };
+  </script>
 </body>
 </html>
