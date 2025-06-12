@@ -1,28 +1,20 @@
-# Usa imagem oficial do Python
-FROM python:3.12-slim
+# Imagem base oficial do Python
+FROM python:3.11-slim
 
-# Define diretório de trabalho
+# Define o diretório de trabalho dentro do container
 WORKDIR /app
 
-# Atualiza pip e instala dependências Python
-RUN apt-get update && \
-    apt-get install -y build-essential && \
-    apt-get clean
+# Copia os arquivos de requisitos para o container
+COPY requirements.txt .
 
-# Copia os arquivos do projeto
-COPY . /app/
+# Instala as dependências do projeto
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Cria ambiente virtual + instala pacotes
-RUN python -m venv /opt/venv && \
-    . /opt/venv/bin/activate && \
-    pip install --upgrade pip && \
-    pip install -r requirements.txt
+# Copia todo o código do projeto para dentro do container
+COPY . .
 
-# Adiciona venv ao PATH
-ENV PATH="/opt/venv/bin:$PATH"
+# Expõe a porta padrão (usada por Railway via $PORT)
+EXPOSE 8000
 
-# Expõe a porta do servidor
-EXPOSE 3306
-
-# Comando para iniciar com Gunicorn
-CMD ["gunicorn", "gestao_cursos.wsgi:application", "--bind", "0.0.0.0:3306"]
+# Executa as migrações e coleta os arquivos estáticos antes de iniciar o servidor
+CMD ["sh", "-c", "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn gestao_cursos.wsgi:application --bind 0.0.0.0:$PORT"]
