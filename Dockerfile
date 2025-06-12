@@ -25,4 +25,4 @@ ENV PATH="/opt/venv/bin:$PATH"
 EXPOSE 3306
 
 # Comando para iniciar com Gunicorn
-CMD ["gunicorn", "gestao_cursos.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["gunicorn", "gestao_cursos.wsgi:application", "--bind", "0.0.0.0:3306"]
