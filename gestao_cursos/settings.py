@@ -75,13 +75,14 @@ WSGI_APPLICATION = 'gestao_cursos.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': env('DB_NAME', default='joselazaroprince$gestao_cursos'),
-        'USER': env('DB_USER', default='joselazaroprince'),
-        'PASSWORD': env('DB_PASSWORD', default='1234'),
-        'HOST': env('DB_HOST', default='joselazaroprince.mysql.pythonanywhere-services.com'),
-        'PORT': env('DB_PORT', default='3306'),
+        'NAME': 'joselazaroprince$gestao_cursos',
+        'USER': 'joselazaroprince',
+        'PASSWORD': 'ENGENHEIRO',
+        'HOST': 'joselazaroprince.mysql.pythonanywhere-services.com',
+        'PORT': '3306',
     }
 }
+
 
 
 
