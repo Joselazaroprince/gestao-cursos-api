@@ -1,54 +1,34 @@
 import os
-import environ
 from pathlib import Path
+import environ
 
-
-# BASE DIR
+# Configuração inicial
 BASE_DIR = Path(__file__).resolve().parent.parent
+env = environ.Env()
+env.read_env(os.path.join(BASE_DIR, '.env'))
 
-# Inicializa o django-environ
-env = environ.Env(DEBUG=(bool, False))
+# Segurança
+SECRET_KEY = env('DJANGO_SECRET_KEY')
+DEBUG = env.bool('DEBUG', False)
+ALLOWED_HOSTS = ['joselazaroprince.pythonanywhere.com', 'localhost', '127.0.0.1']
 
-# Carrega automaticamente .env.dev no desenvolvimento ou .env na produção
-if os.path.exists(os.path.join(BASE_DIR, '.env.dev')):
-    env.read_env(os.path.join(BASE_DIR, '.env.dev'))
-else:
-    env.read_env(os.path.join(BASE_DIR, '.env'))
+# Banco de Dados
+DATABASES = {
+    'default': {
+        'ENGINE': 'mysql.connector.django',  # Corrigido: estava 'ENGINE' errado
+        'NAME': env('DB_NAME'),
+        'USER': env('DB_USER'),
+        'PASSWORD': env('DB_PASSWORD'),
+        'HOST': env('DB_HOST'),
+        'PORT': env('DB_PORT', default='3306'),  # Adicionado default
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'unix_socket': None,
+        },
+    }
+}
 
-# settings.py
-
-# SEGURANÇA BÁSICA
-SECRET_KEY = env('DJANGO_SECRET_KEY', default='chave-insegura-desenvolvimento')  # Nunca commit essa chave no Git!
-DEBUG = env('DEBUG', default=False, cast=bool)  # cast=bool para converter string para booleano
-ENVIRONMENT = env('ENVIRONMENT', default='production')
-
-# ALLOWED HOSTS
-if ENVIRONMENT == 'production':
-    ALLOWED_HOSTS = [
-        'joselazaroprince.pythonanywhere.com',
-        'www.joselazaroprince.pythonanywhere.com',
-        # Adicione outros subdomínios se necessário
-    ]
-else:
-    ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'testserver']  # testserver para testes
-
-# PROTEÇÕES ADICIONAIS PARA PRODUÇÃO
-if ENVIRONMENT == 'production':
-    # HTTPS
-    SECURE_SSL_REDIRECT = True  # Redireciona tudo para HTTPS
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    
-    # Outras proteções
-    SECURE_BROWSER_XSS_FILTER = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    X_FRAME_OPTIONS = 'DENY'
-    SECURE_HSTS_SECONDS = 31536000  # 1 ano
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
-
-# APLICATIVOS
+# Configurações de Aplicativos
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -57,10 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'core',
+    # Seus apps aqui (ex: 'core', 'cursos', etc.)
 ]
 
-# MIDDLEWARE
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -71,40 +50,41 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# CONFIGURAÇÕES DE TEMPLATES
 ROOT_URLCONF = 'gestao_cursos.urls'
 
-TEMPLATES = [{
-    'BACKEND': 'django.template.backends.django.DjangoTemplates',
-    'DIRS': [],
-    'APP_DIRS': True,
-    'OPTIONS': {
-        'context_processors': [
-            'django.template.context_processors.debug',
-            'django.template.context_processors.request',
-            'django.contrib.auth.context_processors.auth',
-            'django.contrib.messages.context_processors.messages',
-        ],
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
     },
-}]
+]
 
 WSGI_APPLICATION = 'gestao_cursos.wsgi.application'
 
-# BANCO DE DADOS
-DATABASES = {
-    'default': {
-        'ENGINE': 'mysql.connector.django', 
-        'NAME': 'joselazaroprince$gestao_cursos',
-        'USER': 'joselazaroprince',
-        'PASSWORD': 'ENGENHEIRO',
-        'HOST': 'joselazaroprince.mysql.pythonanywhere-services.com',
-        'PORT': '3306',
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-            'unix_socket': None,  # 👈 FORÇA TCP/IP
-        },
-    }
-}
+# Validação de senha
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
 
 # CONFIGURAÇÕES INTERNACIONAIS
 LANGUAGE_CODE = 'pt-br'
@@ -141,6 +121,7 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # LOG DE ERROS
 LOGGING = {
@@ -152,10 +133,13 @@ LOGGING = {
             'class': 'logging.FileHandler',
             'filename': os.path.join(BASE_DIR, 'error.log'),
         },
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
     },
     'loggers': {
         'django': {
-            'handlers': ['file'],
+            'handlers': ['file', 'console'],
             'level': 'ERROR',
             'propagate': True,
         },
