@@ -22,7 +22,7 @@ RUN python -m venv /opt/venv && \
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Expõe a porta do servidor
-EXPOSE 8000
+EXPOSE 3306
 
 # Comando para iniciar com Gunicorn
 CMD ["gunicorn", "gestao_cursos.wsgi:application", "--bind", "0.0.0.0:8000"]
