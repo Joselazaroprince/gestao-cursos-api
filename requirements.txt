@@ -3,6 +3,7 @@ pymysql
 djangorestframework
 gunicorn
 python-dotenv
+python-decouple
 whitenoise
 django-cors-headers
 mysqlclient 
