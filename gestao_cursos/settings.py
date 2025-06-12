@@ -2,6 +2,7 @@ import os
 import environ
 from pathlib import Path
 
+
 # BASE DIR
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -74,13 +75,14 @@ WSGI_APPLICATION = 'gestao_cursos.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'joselazaroprince$gestao_cursos',
-        'USER': 'joselazaroprince',
-        'PASSWORD': '1234',
-        'HOST': 'joselazaroprince.mysql.pythonanywhere-services.com',
-        'PORT': '3306',
+        'NAME': env('DB_NAME', default='joselazaroprince$gestao_cursos'),
+        'USER': env('DB_USER', default='joselazaroprince'),
+        'PASSWORD': env('DB_PASSWORD', default='1234'),
+        'HOST': env('DB_HOST', default='joselazaroprince.mysql.pythonanywhere-services.com'),
+        'PORT': env('DB_PORT', default='3306'),
     }
 }
+
 
 
 
