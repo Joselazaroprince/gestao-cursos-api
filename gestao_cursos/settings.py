@@ -1,6 +1,9 @@
 import os
 import environ
 from pathlib import Path
+import pymysql
+pymysql.install_as_MySQLdb()
+
 
 
 # BASE DIR
@@ -88,8 +91,13 @@ DATABASES = {
         'PASSWORD': 'ENGENHEIRO',
         'HOST': 'joselazaroprince.mysql.pythonanywhere-services.com',
         'PORT': '3306',
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'charset': 'utf8mb4',
+        },
     }
 }
+
 
 # CONFIGURAÇÕES INTERNACIONAIS
 LANGUAGE_CODE = 'pt-br'
