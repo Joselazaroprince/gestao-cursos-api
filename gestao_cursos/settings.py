@@ -15,19 +15,38 @@ if os.path.exists(os.path.join(BASE_DIR, '.env.dev')):
 else:
     env.read_env(os.path.join(BASE_DIR, '.env'))
 
-# SEGURANÇA
-SECRET_KEY = env('DJANGO_SECRET_KEY', default='chave-insegura-desenvolvimento')
-DEBUG = env('DEBUG', default=False)
+# settings.py
+
+# SEGURANÇA BÁSICA
+SECRET_KEY = env('DJANGO_SECRET_KEY', default='chave-insegura-desenvolvimento')  # Nunca commit essa chave no Git!
+DEBUG = env('DEBUG', default=False, cast=bool)  # cast=bool para converter string para booleano
 ENVIRONMENT = env('ENVIRONMENT', default='production')
 
 # ALLOWED HOSTS
 if ENVIRONMENT == 'production':
     ALLOWED_HOSTS = [
         'joselazaroprince.pythonanywhere.com',
-        'www.joselazaroprince.pythonanywhere.com'
+        'www.joselazaroprince.pythonanywhere.com',
+        # Adicione outros subdomínios se necessário
     ]
 else:
-    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'testserver']  # testserver para testes
+
+# PROTEÇÕES ADICIONAIS PARA PRODUÇÃO
+if ENVIRONMENT == 'production':
+    # HTTPS
+    SECURE_SSL_REDIRECT = True  # Redireciona tudo para HTTPS
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    
+    # Outras proteções
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+    SECURE_HSTS_SECONDS = 31536000  # 1 ano
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
 
 # APLICATIVOS
 INSTALLED_APPS = [
