@@ -1,253 +1,163 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Gestão de Cursos</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gestão de Cursos - SPA</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    .hidden { display: none; }
+    .pointer { cursor: pointer; }
+  </style>
 </head>
-<body class="bg-light">
-<div class="container py-5">
+<body class="container py-4">
 
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Gestão de Cursos</h2>
-  </div>
+  <h1 class="mb-4">Gestão de Cursos - SPA</h1>
 
-  <!-- FORMULÁRIO DE CURSO -->
-  <div class="card mb-4">
-    <div class="card-body">
-      <h5 id="curso-form-title">Adicionar Curso</h5>
-      <form id="curso-form">
-        <div class="row g-3">
-          <div class="col-md-5"><input type="text" id="curso-nome" class="form-control" placeholder="Nome do Curso" required /></div>
-          <div class="col-md-5"><input type="text" id="curso-descricao" class="form-control" placeholder="Descrição" required /></div>
-          <div class="col-md-2 d-grid">
-            <button type="submit" class="btn btn-success">Salvar</button>
-          </div>
-        </div>
-        <input type="hidden" id="curso-id" />
-        <button type="button" id="cancel-curso-edit" class="btn btn-secondary mt-2 d-none">Cancelar Edição</button>
-      </form>
-    </div>
-  </div>
+  <nav class="mb-4">
+    <button class="btn btn-outline-primary me-2" onclick="showSection('cursos')">Cursos</button>
+    <button class="btn btn-outline-primary me-2" onclick="showSection('modulos')">Módulos</button>
+    <button class="btn btn-outline-primary" onclick="showSection('inscricoes')">Inscrições</button>
+  </nav>
 
-  <div id="curso-list" class="row"></div>
+  <!-- Seções de dados -->
+  <section id="cursos" class="data-section">
+    <h2>Cursos</h2>
+    <ul id="cursos-list" class="list-group"></ul>
+  </section>
 
-  <!-- FORMULÁRIO DE MÓDULO -->
+  <section id="modulos" class="data-section hidden">
+    <h2>Módulos</h2>
+    <ul id="modulos-list" class="list-group"></ul>
+  </section>
+
+  <section id="inscricoes" class="data-section hidden">
+    <h2>Inscrições</h2>
+    <ul id="inscricoes-list" class="list-group"></ul>
+  </section>
+
   <hr />
-  <h2>Gestão de Módulos</h2>
-  <div class="card mb-4">
-    <div class="card-body">
-      <h5 id="modulo-form-title">Adicionar Módulo</h5>
-      <form id="modulo-form">
-        <div class="row g-3">
-          <div class="col-md-3"><input type="text" id="modulo-nome" class="form-control" placeholder="Nome do Módulo" required /></div>
-          <div class="col-md-4"><input type="text" id="modulo-descricao" class="form-control" placeholder="Descrição" required /></div>
-          <div class="col-md-3">
-            <select id="modulo-curso" class="form-select" required>
-              <option value="">Selecione o Curso</option>
-            </select>
-          </div>
-          <div class="col-md-2 d-grid">
-            <button type="submit" class="btn btn-success">Salvar</button>
-          </div>
-        </div>
-        <input type="hidden" id="modulo-id" />
-        <button type="button" id="cancel-modulo-edit" class="btn btn-secondary mt-2 d-none">Cancelar Edição</button>
-      </form>
-    </div>
+
+  <!-- Formulários para criar -->
+  <div id="form-cursos" class="mb-4">
+    <h3>Criar Novo Curso</h3>
+    <form id="curso-form">
+      <input type="text" id="nome-curso" placeholder="Nome" required class="form-control mb-2" />
+      <textarea id="descricao-curso" placeholder="Descrição" required class="form-control mb-2"></textarea>
+      <button type="submit" class="btn btn-primary">Criar Curso</button>
+    </form>
   </div>
 
-  <div id="modulo-list" class="row"></div>
+  <div id="form-modulos" class="mb-4 hidden">
+    <h3>Criar Novo Módulo</h3>
+    <form id="modulo-form">
+      <input type="text" id="nome-modulo" placeholder="Nome" required class="form-control mb-2" />
+      <input type="number" id="curso-modulo" placeholder="ID do Curso" required class="form-control mb-2" />
+      <button type="submit" class="btn btn-primary">Criar Módulo</button>
+    </form>
+  </div>
 
-</div>
+  <div id="form-inscricoes" class="mb-4 hidden">
+    <h3>Criar Nova Inscrição</h3>
+    <form id="inscricao-form">
+      <input type="text" id="estudante-inscricao" placeholder="Nome do Estudante" required class="form-control mb-2" />
+      <input type="number" id="curso-inscricao" placeholder="ID do Curso" required class="form-control mb-2" />
+      <button type="submit" class="btn btn-primary">Criar Inscrição</button>
+    </form>
+  </div>
 
-<script>
-  const BASE_URL = "https://joselazaroprince.pythonanywhere.com/api";
-  const token = "SEU_TOKEN_JWT_FIXO_AQUI"; // Substitua pelo token JWT válido
+  <script>
+    const apiBase = '/api';
 
-  // ======================== CURSOS ========================
-  async function fetchCursos() {
-    const res = await fetch(`${BASE_URL}/cursos/`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
-    renderCursos(data);
-  }
-
-  function renderCursos(cursos) {
-    const list = document.getElementById("curso-list");
-    list.innerHTML = "";
-    cursos.forEach(curso => {
-      const col = document.createElement("div");
-      col.className = "col-md-4";
-      col.innerHTML = `
-        <div class="card mb-3 shadow-sm">
-          <div class="card-body">
-            <h5>${curso.nome}</h5>
-            <p>${curso.descricao}</p>
-            <div class="d-flex justify-content-between">
-              <button class="btn btn-sm btn-primary" onclick="editCurso(${curso.id}, '${curso.nome}', '${curso.descricao}')">Editar</button>
-              <button class="btn btn-sm btn-danger" onclick="deleteCurso(${curso.id})">Excluir</button>
-            </div>
-          </div>
-        </div>`;
-      list.appendChild(col);
-    });
-  }
-
-  document.getElementById("curso-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const nome = document.getElementById("curso-nome").value;
-    const descricao = document.getElementById("curso-descricao").value;
-    const id = document.getElementById("curso-id").value;
-    const method = id ? "PUT" : "POST";
-    const url = id ? `${BASE_URL}/cursos/${id}/` : `${BASE_URL}/cursos/`;
-
-    const res = await fetch(url, {
-      method,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ nome, descricao }),
-    });
-
-    if (res.ok) {
-      document.getElementById("curso-form").reset();
-      document.getElementById("curso-id").value = "";
-      document.getElementById("curso-form-title").textContent = "Adicionar Curso";
-      document.getElementById("cancel-curso-edit").classList.add("d-none");
-      fetchCursos();
-      populateCursoSelect();
+    // Mostra seção e formulário correto
+    function showSection(id) {
+      document.querySelectorAll('.data-section').forEach(sec => {
+        sec.classList.toggle('hidden', sec.id !== id);
+      });
+      document.querySelectorAll('[id^="form-"]').forEach(formDiv => {
+        formDiv.classList.toggle('hidden', formDiv.id !== 'form-' + id);
+      });
+      loadSection(id);
     }
-  });
 
-  function editCurso(id, nome, descricao) {
-    document.getElementById("curso-id").value = id;
-    document.getElementById("curso-nome").value = nome;
-    document.getElementById("curso-descricao").value = descricao;
-    document.getElementById("curso-form-title").textContent = "Editar Curso";
-    document.getElementById("cancel-curso-edit").classList.remove("d-none");
-  }
+    // Carrega dados e mostra nas listas
+    async function loadSection(id) {
+      const res = await fetch(`${apiBase}/${id}/`);
+      const data = await res.json();
 
-  document.getElementById("cancel-curso-edit").addEventListener("click", () => {
-    document.getElementById("curso-form").reset();
-    document.getElementById("curso-id").value = "";
-    document.getElementById("curso-form-title").textContent = "Adicionar Curso";
-    document.getElementById("cancel-curso-edit").classList.add("d-none");
-  });
+      let ul = document.getElementById(`${id}-list`);
+      ul.innerHTML = '';
 
-  async function deleteCurso(id) {
-    if (!confirm("Deseja excluir este curso?")) return;
-    await fetch(`${BASE_URL}/cursos/${id}/`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    fetchCursos();
-  }
+      data.results.forEach(item => {
+        let li = document.createElement('li');
+        li.className = 'list-group-item';
 
-  // ======================== MÓDULOS ========================
-  async function fetchModulos() {
-    const res = await fetch(`${BASE_URL}/modulos/`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
-    renderModulos(data);
-  }
+        if (id === 'cursos') {
+          li.textContent = `ID: ${item.id} — ${item.nome} — ${item.descricao}`;
+        } else if (id === 'modulos') {
+          li.textContent = `ID: ${item.id} — ${item.nome} — Curso: ${item.curso}`;
+        } else if (id === 'inscricoes') {
+          li.textContent = `ID: ${item.id} — Estudante: ${item.estudante} — Curso: ${item.curso}`;
+        }
 
-  function renderModulos(modulos) {
-    const list = document.getElementById("modulo-list");
-    list.innerHTML = "";
-    modulos.forEach(modulo => {
-      const col = document.createElement("div");
-      col.className = "col-md-4";
-      col.innerHTML = `
-        <div class="card mb-3 shadow-sm">
-          <div class="card-body">
-            <h5>${modulo.nome}</h5>
-            <p>${modulo.descricao}</p>
-            <p class="text-muted"><small>Curso ID: ${modulo.curso}</small></p>
-            <div class="d-flex justify-content-between">
-              <button class="btn btn-sm btn-primary" onclick="editModulo(${modulo.id}, '${modulo.nome}', '${modulo.descricao}', ${modulo.curso})">Editar</button>
-              <button class="btn btn-sm btn-danger" onclick="deleteModulo(${modulo.id})">Excluir</button>
-            </div>
-          </div>
-        </div>`;
-      list.appendChild(col);
-    });
-  }
-
-  async function populateCursoSelect() {
-    const res = await fetch(`${BASE_URL}/cursos/`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const cursos = await res.json();
-    const select = document.getElementById("modulo-curso");
-    select.innerHTML = `<option value="">Selecione o Curso</option>`;
-    cursos.forEach(curso => {
-      select.innerHTML += `<option value="${curso.id}">${curso.nome}</option>`;
-    });
-  }
-
-  document.getElementById("modulo-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const nome = document.getElementById("modulo-nome").value;
-    const descricao = document.getElementById("modulo-descricao").value;
-    const curso = document.getElementById("modulo-curso").value;
-    const id = document.getElementById("modulo-id").value;
-    const method = id ? "PUT" : "POST";
-    const url = id ? `${BASE_URL}/modulos/${id}/` : `${BASE_URL}/modulos/`;
-
-    const res = await fetch(url, {
-      method,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ nome, descricao, curso }),
-    });
-
-    if (res.ok) {
-      document.getElementById("modulo-form").reset();
-      document.getElementById("modulo-id").value = "";
-      document.getElementById("modulo-form-title").textContent = "Adicionar Módulo";
-      document.getElementById("cancel-modulo-edit").classList.add("d-none");
-      fetchModulos();
+        ul.appendChild(li);
+      });
     }
-  });
 
-  function editModulo(id, nome, descricao, curso) {
-    document.getElementById("modulo-id").value = id;
-    document.getElementById("modulo-nome").value = nome;
-    document.getElementById("modulo-descricao").value = descricao;
-    document.getElementById("modulo-curso").value = curso;
-    document.getElementById("modulo-form-title").textContent = "Editar Módulo";
-    document.getElementById("cancel-modulo-edit").classList.remove("d-none");
-  }
+    // Faz POST para criar novo registro
+    async function postData(endpoint, data) {
+      const response = await fetch(`${apiBase}/${endpoint}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
 
-  document.getElementById("cancel-modulo-edit").addEventListener("click", () => {
-    document.getElementById("modulo-form").reset();
-    document.getElementById("modulo-id").value = "";
-    document.getElementById("modulo-form-title").textContent = "Adicionar Módulo";
-    document.getElementById("cancel-modulo-edit").classList.add("d-none");
-  });
+      if (!response.ok) {
+        alert('Erro ao criar. Verifique os dados e tente novamente.');
+        throw new Error('Erro na requisição POST');
+      }
 
-  async function deleteModulo(id) {
-    if (!confirm("Deseja excluir este módulo?")) return;
-    await fetch(`${BASE_URL}/modulos/${id}/`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
+      return response.json();
+    }
+
+    // Eventos para criação via formulário
+    document.getElementById('curso-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const data = {
+        nome: document.getElementById('nome-curso').value,
+        descricao: document.getElementById('descricao-curso').value,
+      };
+      await postData('cursos', data);
+      e.target.reset();
+      loadSection('cursos');
     });
-    fetchModulos();
-  }
 
-  // Carregamento inicial
-  window.onload = () => {
-    fetchCursos();
-    fetchModulos();
-    populateCursoSelect();
-  };
-</script>
+    document.getElementById('modulo-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const data = {
+        nome: document.getElementById('nome-modulo').value,
+        curso: parseInt(document.getElementById('curso-modulo').value),
+      };
+      await postData('modulos', data);
+      e.target.reset();
+      loadSection('modulos');
+    });
+
+    document.getElementById('inscricao-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const data = {
+        estudante: document.getElementById('estudante-inscricao').value,
+        curso: parseInt(document.getElementById('curso-inscricao').value),
+      };
+      await postData('inscricoes', data);
+      e.target.reset();
+      loadSection('inscricoes');
+    });
+
+    // Inicializa mostrando cursos
+    showSection('cursos');
+  </script>
 </body>
 </html>
