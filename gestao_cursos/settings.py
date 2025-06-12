@@ -83,10 +83,6 @@ DATABASES = {
     }
 }
 
-
-
-
-
 # CONFIGURAÇÕES INTERNACIONAIS
 LANGUAGE_CODE = 'pt-br'
 TIME_ZONE = 'UTC'
