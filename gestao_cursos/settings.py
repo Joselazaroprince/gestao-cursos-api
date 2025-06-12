@@ -74,7 +74,7 @@ WSGI_APPLICATION = 'gestao_cursos.wsgi.application'
 # BANCO DE DADOS
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'mysql.connector.django', 
         'NAME': 'joselazaroprince$gestao_cursos',
         'USER': 'joselazaroprince',
         'PASSWORD': 'ENGENHEIRO',
