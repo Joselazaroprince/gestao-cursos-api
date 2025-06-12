@@ -1,0 +1,5 @@
+[build]
+builder = "DOCKERFILE"
+
+[deploy]
+startCommand = "gunicorn gestao_cursos.wsgi:application --bind 0.0.0.0:$PORT"
