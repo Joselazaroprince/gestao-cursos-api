@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 8000
 
 # Executa as migrações e coleta os arquivos estáticos antes de iniciar o servidor
-CMD ["sh", "-c", "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn gestao_cursos.wsgi:application --bind 0.0.0.0:$PORT"]
+CMD ["sh", "-c", "gunicorn gestao_cursos.wsgi:application --bind 0.0.0.0:${PORT}"]
